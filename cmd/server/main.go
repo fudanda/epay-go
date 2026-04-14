@@ -52,6 +52,7 @@ func main() {
 	if err := adminService.InitDefaultAdmin(); err != nil {
 		log.Printf("Failed to init default admin: %v", err)
 	}
+	log.Println("Default admin initialized")
 
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)

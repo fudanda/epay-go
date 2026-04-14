@@ -3,6 +3,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"os"
 
 	"github.com/example/epay-go/internal/model"
@@ -47,6 +48,9 @@ func (s *AdminService) InitDefaultAdmin() error {
 	if err != nil {
 		return err
 	}
+	log.Println("username:", username)
+	log.Println("password:", password)
+	log.Println("hashedPassword:", hashedPassword)
 
 	admin := &model.Admin{
 		Username: username,

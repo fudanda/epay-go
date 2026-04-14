@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/go-pay/gopay"
 	"github.com/go-pay/gopay/alipay"
@@ -55,6 +57,10 @@ func NewAlipayAdapter(configJSON json.RawMessage) (PaymentAdapter, error) {
 		// cert_mode -> is_prod/sign_type (无法可靠推断，保持默认即可)
 		if _, ok := m["sign_type"]; !ok {
 			m["sign_type"] = "RSA2"
+		}
+		// 兼容历史字符串布尔值
+		if normalized, ok := normalizeJSONBool(m["is_prod"]); ok {
+			m["is_prod"] = normalized
 		}
 		b, _ := json.Marshal(m)
 		configJSON = b
@@ -243,4 +249,37 @@ func (a *AlipayAdapter) NotifySuccess() string {
 
 func init() {
 	Register("alipay", NewAlipayAdapter)
+}
+
+func normalizeJSONBool(value interface{}) (bool, bool) {
+	switch v := value.(type) {
+	case bool:
+		return v, true
+	case string:
+		trimmed := strings.TrimSpace(v)
+		if trimmed == "" {
+			return false, false
+		}
+		parsed, err := strconv.ParseBool(trimmed)
+		if err == nil {
+			return parsed, true
+		}
+		switch strings.ToLower(trimmed) {
+		case "1", "yes", "y", "on":
+			return true, true
+		case "0", "no", "n", "off":
+			return false, true
+		default:
+			return false, false
+		}
+	case float64:
+		if v == 1 {
+			return true, true
+		}
+		if v == 0 {
+			return false, true
+		}
+	}
+
+	return false, false
 }
