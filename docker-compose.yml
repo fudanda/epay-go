@@ -38,57 +38,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # Go 后端
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        GOPROXY: ${GOPROXY:-https://goproxy.cn,direct}
-    container_name: epay-backend
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-epay}
-      - DB_PASSWORD=${DB_PASSWORD:-epay123}
-      - DB_NAME=${DB_NAME:-epay}
-      - DB_SSLMODE=disable
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
-      - GIN_MODE=release
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1 || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  # Vue 前端
-  frontend:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    container_name: epay-frontend
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-
 volumes:
   postgres_data:
   redis_data:

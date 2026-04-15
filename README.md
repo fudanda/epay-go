@@ -6,6 +6,11 @@ cd web && npm run build
 go build -o epay-server cmd/server/main.go
 
 
+$env:CGO_ENABLED="0"
+$env:GOOS="linux"
+$env:GOARCH="amd64"
+go build -ldflags="-s -w" -o epay-linux-amd64 cmd/server/main.go
+
 ## 技术栈
 
 - 后端：Go、Gin、GORM、PostgreSQL、Redis
