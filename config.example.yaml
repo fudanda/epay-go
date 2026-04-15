@@ -1,22 +1,22 @@
 # config.example.yaml
 server:
-  port: 8080
-  mode: debug  # debug, release, test
+  port: 8090
+  mode: debug # debug, release, test
 
 database:
   host: localhost
-  port: 5432
+  port: 5433
   user: epay
-  password: your_password_here
+  password: 4f1fe5bd23d3ce92834cf455e54f21c4
   dbname: epay
   sslmode: disable
 
 redis:
   host: localhost
-  port: 6379
-  password: ""
+  port: 6380
+  password: "ee9f98b72f9b57cbf6269916d7505ce8"
   db: 0
 
 jwt:
-  secret: your_jwt_secret_here_change_in_production
-  expire_hour: 168  # 7 days
+  secret: 0722b0cd7ebc3187078afe162d1e22cd6a21ea41a8cf3d60fc16b12f2a9b0c71
+  expire_hour: 168 # 7 days

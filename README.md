@@ -2,6 +2,10 @@
 
 一个基于 Go + Gin + PostgreSQL + Redis + Vue 3 的支付系统示例项目，提供管理后台、商户中心、统一下单、通道管理，以及订单 / 退款 / 结算流程。
 
+cd web && npm run build
+go build -o epay-server cmd/server/main.go
+
+
 ## 技术栈
 
 - 后端：Go、Gin、GORM、PostgreSQL、Redis

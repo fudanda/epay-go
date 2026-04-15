@@ -4,13 +4,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
+	"strings"
 	"syscall"
 	"time"
 
+	epaygo "github.com/example/epay-go"
 	"github.com/example/epay-go/internal/cache"
 	"github.com/example/epay-go/internal/config"
 	"github.com/example/epay-go/internal/database"
@@ -72,6 +76,54 @@ func main() {
 
 	// 注册所有路由
 	router.Setup(r)
+
+	distFS, err := fs.Sub(epaygo.WebDist, "web/dist")
+	if err != nil {
+		log.Fatalf("Failed to load embedded web assets: %v", err)
+	}
+	indexHTML, err := fs.ReadFile(distFS, "index.html")
+	if err != nil {
+		log.Fatalf("Failed to load embedded index.html: %v", err)
+	}
+	fileServer := http.FileServer(http.FS(distFS))
+
+	r.NoRoute(func(c *gin.Context) {
+		requestPath := c.Request.URL.Path
+
+		if strings.HasPrefix(requestPath, "/api/") ||
+			requestPath == "/health" ||
+			requestPath == "/submit.php" ||
+			requestPath == "/mapi.php" ||
+			requestPath == "/api.php" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		}
+
+		if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		name := strings.TrimPrefix(path.Clean(requestPath), "/")
+		if name == "." {
+			name = ""
+		}
+
+		if name != "" {
+			if _, err := distFS.Open(name); err == nil {
+				fileServer.ServeHTTP(c.Writer, c.Request)
+				return
+			}
+
+			// Requests for missing concrete files should stay 404 instead of falling back to SPA.
+			if path.Ext(name) != "" {
+				c.Status(http.StatusNotFound)
+				return
+			}
+		}
+
+		c.Data(http.StatusOK, "text/html; charset=utf-8", indexHTML)
+	})
 
 	// 启动异步通知工作协程
 	ctx, cancel := context.WithCancel(context.Background())

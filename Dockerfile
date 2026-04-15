@@ -1,5 +1,16 @@
 # epay-go/Dockerfile
-# 构建阶段
+# 前端构建阶段
+FROM node:22-alpine AS web-builder
+
+WORKDIR /app/web
+
+COPY web/package.json web/package-lock.json ./
+RUN npm ci
+
+COPY web/ ./
+RUN npm run build
+
+# 后端构建阶段
 FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
@@ -16,6 +27,9 @@ RUN go mod download
 
 # 复制源代码
 COPY . .
+
+# 注入前端构建产物，供 go:embed 打包
+COPY --from=web-builder /app/web/dist ./web/dist
 
 # 构建
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o epay-server ./cmd/server
