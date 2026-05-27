@@ -1,4 +1,6 @@
 # epay-go/docker-compose.yml
+# Deprecated for local LZClaw workspace dependency startup.
+# Prefer D:\SRMTJ\LZClaw\LZDocker\docker-compose.yml for shared PostgreSQL/Redis.
 version: '3.8'
 
 services:

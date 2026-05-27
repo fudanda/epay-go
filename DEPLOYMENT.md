@@ -1,5 +1,7 @@
 # EPay Go 部署指南
 
+> 在 `D:\SRMTJ\LZClaw` 工作区内，推荐先通过 `D:\SRMTJ\LZClaw\LZDocker\docker-compose.yml` 启动统一 PostgreSQL/Redis 依赖，再启动本项目服务。本文档中的本仓库 `docker-compose` 方式保留为历史兼容路径。
+
 ## 环境要求
 
 - Docker 20.10+

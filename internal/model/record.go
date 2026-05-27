@@ -21,7 +21,7 @@ type BalanceRecord struct {
 }
 
 func (BalanceRecord) TableName() string {
-	return "balance_records"
+	return prefixedTableName("balance_records")
 }
 
 // 资金变动类型常量

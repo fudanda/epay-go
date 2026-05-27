@@ -37,25 +37,41 @@ cp .env.example .env
 
 然后按需修改数据库、Redis、JWT、默认管理员和支付渠道配置。
 
-### 2. 启动项目
+### 2. 启动统一依赖（LZDocker 单入口）
 
 ```bash
-docker compose up -d --build
+cd ../LZDocker
+docker compose --env-file .env -f docker-compose.yml up -d
 ```
 
-默认包含以下服务：
+默认由 `LZDocker` 提供：
 
-- `postgres`
-- `redis`
-- `backend`
-- `frontend`
+- Supabase PostgreSQL（通过 Supavisor 暴露 `55432`）
+- 共享 Redis（`16379`）
 
-默认端口：
+### 3. 启动 epay-go
+
+```bash
+cd ../epay-go
+go run cmd/server/main.go
+```
+
+如需前端开发：
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+常用端口：
 
 - `80`：前端
 - `8080`：后端
-- `5432`：PostgreSQL
-- `6379`：Redis
+- `55432`：PostgreSQL（Supavisor Session）
+- `16379`：Redis
+
+> 说明：`epay-go` 仓库内的 `docker-compose.yml` 仍保留作历史备用，但默认不再作为 PG/Redis 依赖入口。
 
 ### 常用访问入口
 

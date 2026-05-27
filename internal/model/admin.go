@@ -13,5 +13,5 @@ type Admin struct {
 }
 
 func (Admin) TableName() string {
-	return "admins"
+	return prefixedTableName("admins")
 }

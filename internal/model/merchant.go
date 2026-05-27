@@ -21,5 +21,5 @@ type Merchant struct {
 }
 
 func (Merchant) TableName() string {
-	return "merchants"
+	return prefixedTableName("merchants")
 }

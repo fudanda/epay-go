@@ -24,7 +24,7 @@ type Settlement struct {
 }
 
 func (Settlement) TableName() string {
-	return "settlements"
+	return prefixedTableName("settlements")
 }
 
 // 结算状态常量

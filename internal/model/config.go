@@ -11,5 +11,5 @@ type Config struct {
 }
 
 func (Config) TableName() string {
-	return "configs"
+	return prefixedTableName("configs")
 }
