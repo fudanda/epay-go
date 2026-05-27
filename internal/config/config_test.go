@@ -61,7 +61,7 @@ func writeTestConfig(t *testing.T, dir string) {
 
 database:
   host: 127.0.0.1
-  port: 55432
+  port: 25432
   user: postgres.lzserver
   password: password
   dbname: from_config
@@ -69,7 +69,7 @@ database:
 
 redis:
   host: 127.0.0.1
-  port: 16379
+  port: 26379
   password: redis_password
   db: 1
 

@@ -37,6 +37,7 @@ Thumbs.db
 # Build
 dist/
 build/
+releases/
 
 # Frontend
 web/node_modules/

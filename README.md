@@ -11,6 +11,19 @@ $env:GOOS="linux"
 $env:GOARCH="amd64"
 go build -ldflags="-s -w" -o epay-linux-amd64 cmd/server/main.go
 
+.\package-linux.ps1
+.\package-linux.ps1 -GoArch arm64
+
+`package-linux.ps1` 会先构建前端，再交叉编译 Linux 二进制，并把部署必需文件打成 ZIP 到 `releases/`。包内默认包含：
+
+- `epay-server`
+- `config.yaml`
+- 当前 `.env`（如果存在）
+- `.env.example`
+- `config.example.yaml`
+- `DEPLOYMENT.md`
+- `deploy/`
+
 ## 技术栈
 
 - 后端：Go、Gin、GORM、PostgreSQL、Redis
@@ -46,8 +59,8 @@ docker compose --env-file .env -f docker-compose.yml up -d
 
 默认由 `LZDocker` 提供：
 
-- Supabase PostgreSQL（通过 Supavisor 暴露 `55432`）
-- 共享 Redis（`16379`）
+- Supabase PostgreSQL（通过 Supavisor 暴露 `25432`）
+- 共享 Redis（`26379`）
 
 ### 3. 启动 epay-go
 
@@ -68,8 +81,8 @@ npm run dev
 
 - `80`：前端
 - `8080`：后端
-- `55432`：PostgreSQL（Supavisor Session）
-- `16379`：Redis
+- `25432`：PostgreSQL（Supavisor Session）
+- `26379`：Redis
 
 > 说明：`epay-go` 仓库内的 `docker-compose.yml` 仍保留作历史备用，但默认不再作为 PG/Redis 依赖入口。
 

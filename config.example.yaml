@@ -5,7 +5,7 @@ server:
 
 database:
   host: 127.0.0.1
-  port: 55432
+  port: 25432
   user: postgres.lzserver
   password: "<POSTGRES_PASSWORD>"
   dbname: postgres
@@ -13,7 +13,7 @@ database:
 
 redis:
   host: 127.0.0.1
-  port: 16379
+  port: 26379
   password: "<REDIS_PASSWORD>"
   db: 1
 
