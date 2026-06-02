@@ -4,6 +4,9 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/example/epay-go/internal/model"
 	"github.com/example/epay-go/internal/repository"
@@ -23,9 +26,10 @@ func NewChannelService() *ChannelService {
 // CreateChannelRequest 创建通道请求
 type CreateChannelRequest struct {
 	Name       string                 `json:"name" binding:"required"`
+	Key        string                 `json:"key"`
 	Plugin     string                 `json:"plugin" binding:"required"`
 	PayTypes   string                 `json:"pay_types"`
-	AppType    string                 `json:"app_type"`  // 支持的接口类型
+	AppType    string                 `json:"app_type"` // 支持的接口类型
 	Config     map[string]interface{} `json:"config"`
 	Rate       float64                `json:"rate"`
 	DailyLimit float64                `json:"daily_limit"`
@@ -47,6 +51,7 @@ func (s *ChannelService) Create(req *CreateChannelRequest) (*model.Channel, erro
 
 	channel := &model.Channel{
 		Name:       req.Name,
+		Key:        resolveChannelKey(req),
 		Plugin:     req.Plugin,
 		PayTypes:   req.PayTypes,
 		AppType:    req.AppType,
@@ -62,6 +67,21 @@ func (s *ChannelService) Create(req *CreateChannelRequest) (*model.Channel, erro
 	}
 
 	return channel, nil
+}
+
+func resolveChannelKey(req *CreateChannelRequest) string {
+	if req == nil {
+		return "channel_" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	}
+	trimmed := strings.TrimSpace(req.Key)
+	if trimmed != "" {
+		return trimmed
+	}
+	plugin := strings.TrimSpace(req.Plugin)
+	if plugin == "" {
+		plugin = "channel"
+	}
+	return plugin + "_" + strconv.FormatInt(time.Now().UnixMilli(), 10)
 }
 
 // GetByID 根据ID获取通道

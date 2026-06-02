@@ -62,7 +62,10 @@ func renameLegacyTables() error {
 		hasCurrent := migrator.HasTable(rename.current)
 
 		if hasLegacy && hasCurrent {
-			return fmt.Errorf("both legacy and prefixed tables exist: %s and %s", rename.legacy, rename.current)
+			if err := reconcileLegacyAndPrefixedTable(rename.legacy, rename.current); err != nil {
+				return err
+			}
+			continue
 		}
 
 		if !hasLegacy || hasCurrent {
@@ -85,6 +88,68 @@ func renameLegacyTables() error {
 	}
 
 	return nil
+}
+
+func reconcileLegacyAndPrefixedTable(legacyTable, currentTable string) error {
+	legacyRows, err := tableRowCount(legacyTable)
+	if err != nil {
+		log.Printf("Warning: failed to count legacy table %s: %v. Keeping prefixed table %s.", legacyTable, err, currentTable)
+		return nil
+	}
+	currentRows, err := tableRowCount(currentTable)
+	if err != nil {
+		log.Printf("Warning: failed to count prefixed table %s: %v. Keeping prefixed table.", currentTable, err)
+		return nil
+	}
+
+	if legacyRows == 0 {
+		log.Printf("Legacy and prefixed tables both exist: %s and %s (legacy rows=0). Keeping prefixed table.", legacyTable, currentTable)
+		return nil
+	}
+
+	// If both tables exist and only legacy table has rows, backfill to prefixed table
+	// so runtime always reads the canonical prefixed table.
+	if currentRows == 0 {
+		if err := copyLegacyRowsToPrefixed(legacyTable, currentTable); err != nil {
+			log.Printf(
+				"Warning: failed to backfill prefixed table %s from legacy table %s: %v. "+
+					"Service will continue with prefixed table; please reconcile data manually if needed.",
+				currentTable,
+				legacyTable,
+				err,
+			)
+			return nil
+		}
+		log.Printf("Backfilled %s from %s (%d rows).", currentTable, legacyTable, legacyRows)
+		return nil
+	}
+
+	log.Printf(
+		"Legacy and prefixed tables both exist and contain data: %s(%d) and %s(%d). Keeping prefixed table for runtime.",
+		legacyTable,
+		legacyRows,
+		currentTable,
+		currentRows,
+	)
+	return nil
+}
+
+func tableRowCount(tableName string) (int64, error) {
+	var count int64
+	if err := DB.Raw("SELECT COUNT(*) FROM " + quoteIdentifier(tableName)).Scan(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func copyLegacyRowsToPrefixed(legacyTable, currentTable string) error {
+	// Tables are structurally equivalent (legacy name migration). ON CONFLICT DO NOTHING
+	// ensures this remains idempotent if rerun.
+	return DB.Exec(
+		"INSERT INTO " + quoteIdentifier(currentTable) +
+			" SELECT * FROM " + quoteIdentifier(legacyTable) +
+			" ON CONFLICT DO NOTHING",
+	).Error
 }
 
 func renameTableIndexes(legacyTableName, currentTableName string) error {
